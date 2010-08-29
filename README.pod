@@ -2,12 +2,6 @@
 
 Run simple git operations (diff/log/add/commit/...) from outside the working directory.
 
-=head2 VERSION
-
-version 0.01
-
-    Kinda mostly works.
-
 =head2 SYNOPSIS
 
 Run git commands as if you were inside the working directory. This is useful
@@ -22,9 +16,15 @@ multiple repositories.
 B<rgit> examines the commandline arguments, and tries to work out the
 I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.  
 
+=head2 VERSION
+
+version 0.02
+
+    Kinda mostly works.
+
 =head2 INSTALLATION
 
-Simply copy the B<rgit> to a directory in your $PATH.
+Simply copy the B<rgit> script to a directory in your $PATH.
 
 =head2 DEPENDENCIES
 
