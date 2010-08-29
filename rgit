@@ -1,0 +1,65 @@
+#!/opt/local/bin/perl -w
+
+use strict;
+use warnings;
+
+use File::Spec;
+use File::Basename;
+
+chomp(my $git_cmd = `which git`);
+my $git_work_tree;    # Directory holding the repo
+my $git_dir;          # Directory holding the .git directory
+
+# (1) Loop through args in reverse order, testing if any resemble a file path
+# with a .git dir in it somewhere. Use this information to replace any relative
+# paths with absolute ones, as well as record the GIT_WORK_TREE and GIT_DIR ENV
+# variables.  as the GIT_WORK_TREE and GIT_DIR ENV variables.
+foreach my $arg ( reverse @ARGV ) {
+    if ( my $gwt = get_git_work_tree($arg) ) {
+
+        # Grab the first work tree found, and assume it's the only one
+        $git_work_tree = File::Spec->rel2abs($gwt) unless $git_work_tree;
+
+        # Replace any relative path with an absolute one
+        $arg = File::Spec->rel2abs($arg);
+    }
+}
+$git_dir = File::Spec->catdir( $git_work_tree, '.git' ) if $git_work_tree;
+
+my $command;
+if ( !$git_work_tree || $git_work_tree eq '.' ) {
+    $command = "$git_cmd " . join( ' ', @ARGV );
+}
+else {
+    $command = qq{GIT_WORK_TREE="$git_work_tree" GIT_DIR="$git_dir" $git_cmd }
+        . join( ' ', @ARGV );
+}
+
+#print "COMMAND: $command\n";
+
+exec $command;
+
+exit;
+
+sub get_git_work_tree {
+    my $path = shift;
+
+    my $last = '';
+    while ( $path ne $last && $path ne '.' ) {
+        if ( -d "$path/.git" ) {
+            return $path;
+        }
+        $last = $path;
+        $path = dirname($path);
+    }
+}
+
+__END__
+
+=head1 TODO
+
+* Add POD
+
+* Work out perl binary path at runtime 
+
+=cut
