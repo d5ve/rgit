@@ -20,7 +20,7 @@ I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.
 
 version 0.02
 
-    Kinda mostly works.
+    Now with some POD.
 
 =head2 INSTALLATION
 
@@ -43,6 +43,6 @@ This module requires these other modules and libraries:
 rgit is free software. It comes without any warranty, to the extent permitted
 by applicable law. 
 
-rgit is released under the L<WTFPL Version 2.0|http://sam.zoy.org/wtfpl/COPYING>
+rgit is released under the I<WTFPL Version 2.0> L<http://sam.zoy.org/wtfpl/COPYING>
 
 =cut

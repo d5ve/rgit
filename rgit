@@ -1,7 +1,36 @@
 #!/usr/bin/env perl -w
 
+=head1 rgit - remote git script
+
+Run simple git operations (diff/log/add/commit/...) from outside the working directory.
+
+=head2 SYNOPSIS
+
+Run git commands as if you were inside the working directory. This is useful
+when you want to avoid changing directory all the time when working with
+multiple repositories.
+
+    cd /tmp    
+    rgit diff /home/d5ve/checkout1
+    rgit add /home/d5ve/checkout1/*.pl
+    rgit commit /home/d5ve/checkout1/
+
+B<rgit> examines the commandline arguments, and tries to work out the
+I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.  
+
+=head2 VERSION
+
+version 0.02
+
+    Now with some POD.
+
+=cut
+
 use strict;
 use warnings;
+
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
 
 use File::Spec;
 use File::Basename;
@@ -56,10 +85,28 @@ sub get_git_work_tree {
 
 __END__
 
-=head1 TODO
 
-* Add POD
+=head2 INSTALLATION
 
-* Work out perl binary path at runtime 
+Simply copy the B<rgit> script to a directory in your $PATH.
+
+=head2 DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+=over 4
+
+=item * File::Spec
+
+=item * File::Basename
+
+=back
+
+=head2 LICENCE
+
+rgit is free software. It comes without any warranty, to the extent permitted
+by applicable law. 
+
+rgit is released under the I<WTFPL Version 2.0> L<http://sam.zoy.org/wtfpl/COPYING>
 
 =cut
