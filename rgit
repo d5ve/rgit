@@ -15,12 +15,12 @@ multiple repositories.
     rgit add /home/d5ve/checkout1/*.pl
     rgit commit /home/d5ve/checkout1/
 
-B<rgit> examines the commandline arguments, and tries to work out the
+B<rgit> examines the commandline arguments, and tries to work out, then set the
 I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.  
 
 =head2 VERSION
 
-version 0.02
+version 0.003
 
     Now with some POD.
 
@@ -29,7 +29,7 @@ version 0.02
 use strict;
 use warnings;
 
-our $VERSION = "0.02";
+our $VERSION = "0.003";
 $VERSION = eval $VERSION;
 
 use File::Spec;
@@ -85,6 +85,30 @@ sub get_git_work_tree {
 
 __END__
 
+=head2 DESCRIPTION
+
+B<rgit> was written to address an issue I had when moving from SVN to git. I
+missed the ability to run operations on a checkout/repository from a directory
+outside it.
+
+For example, of the following commands, only the SVN one works:
+
+    cd /tmp
+    svn diff /home/d5ve/svncheckout/*.pl        # works as expected
+    git diff /home/d5ve/gitcheckout/*.pl        # fails to work
+
+Without doing any actual investigation, I think this may be because each
+directory in an SVN checkout has a .svn directory, so when you run a SVN
+command, which checkout is being referenced is gleaned from the file path. git,
+however, has only a .git directory at the very top of the checkout. This means
+that the only simple way to run git commands against a working directory is to
+move into the working directory (or any subdirectory of the working directory).
+
+You can use the I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables to tell
+git where the repository and .git directory are. B<rgit> attempts to work out
+the correct value for these variables, then sets them before running the command.
+
+All file paths are converted from relative to full.
 
 =head2 INSTALLATION
 
@@ -107,6 +131,6 @@ This module requires these other modules and libraries:
 rgit is free software. It comes without any warranty, to the extent permitted
 by applicable law. 
 
-rgit is released under the I<WTFPL Version 2.0> L<http://sam.zoy.org/wtfpl/COPYING>
+rgit is released under the I<WTFPL Version 2.0> licence - L<http://sam.zoy.org/wtfpl/COPYING>
 
 =cut
