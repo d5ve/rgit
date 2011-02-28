@@ -20,16 +20,16 @@ I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.
 
 =head2 VERSION
 
-version 0.003
+Version 0.004
 
-    Now with some POD.
+    Now filters out obvious flags and comments from directory tests.
 
 =cut
 
 use strict;
 use warnings;
 
-our $VERSION = "0.003";
+our $VERSION = "0.004";
 $VERSION = eval $VERSION;
 
 use File::Spec;
@@ -44,6 +44,14 @@ my $git_dir;          # Directory holding the .git directory
 # paths with absolute ones, as well as record the GIT_WORK_TREE and GIT_DIR ENV
 # variables.  as the GIT_WORK_TREE and GIT_DIR ENV variables.
 foreach my $arg ( reverse @ARGV ) {
+
+    # Skip if this arg looks like a git flag (-m etc.)
+    next if $arg =~ m{\A - }xms; 
+
+    # Skip if this arg contains many spaces - it's probably a commit
+    # message.
+    next if $arg =~ m{ (\s.*?){4,} }xms;
+
     if ( my $gwt = get_git_work_tree($arg) ) {
 
         # Grab the first work tree found, and assume it's the only one
