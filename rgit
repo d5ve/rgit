@@ -10,19 +10,24 @@ Run git commands as if you were inside the working directory. This is useful
 when you want to avoid changing directory all the time when working with
 multiple repositories.
 
-    cd /tmp    
+    cd /tmp
     rgit diff /home/d5ve/checkout1
     rgit add /home/d5ve/checkout1/*.pl
     rgit commit /home/d5ve/checkout1/
 
 B<rgit> examines the commandline arguments, and tries to work out, then set the
-I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.  
+I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.
 
 =head2 VERSION
 
-Version 0.004
+Current version 0.04 - 2011-03-02
 
     Now filters out obvious flags and comments from directory tests.
+    Now works when passed a commit message on the commandline.
+
+Version 0.02 - 2010-09-02
+
+    Now with some POD.
 
 =cut
 
@@ -35,7 +40,7 @@ $VERSION = eval $VERSION;
 use File::Spec;
 use File::Basename;
 
-chomp(my $git_cmd = `which git`);
+chomp( my $git_cmd = `which git` );
 my $git_work_tree;    # Directory holding the repo
 my $git_dir;          # Directory holding the .git directory
 
@@ -46,7 +51,7 @@ my $git_dir;          # Directory holding the .git directory
 foreach my $arg ( reverse @ARGV ) {
 
     # Skip if this arg looks like a git flag (-m etc.)
-    next if $arg =~ m{\A - }xms; 
+    next if $arg =~ m{\A - }xms;
 
     # Skip if this arg contains many spaces - it's probably a commit
     # message.
@@ -65,15 +70,26 @@ $git_dir = File::Spec->catdir( $git_work_tree, '.git' ) if $git_work_tree;
 
 my $command;
 if ( !$git_work_tree || $git_work_tree eq '.' ) {
-    $command = "$git_cmd " . join( ' ', @ARGV );
+    $command = "$git_cmd ";
 }
 else {
-    $command = qq{GIT_WORK_TREE="$git_work_tree" GIT_DIR="$git_dir" $git_cmd }
-        . join( ' ', @ARGV );
+    $command = qq{GIT_WORK_TREE="$git_work_tree" GIT_DIR="$git_dir" $git_cmd };
+}
+foreach my $arg (@ARGV) {
+
+    # If any single element in @ARGV contains spaces, then it must have been
+    # quoted originally, so re-quote optimistically with "".
+    # TODO - Maybe try to look at the string and see what sort of quoting was most
+    # likely used.
+    if ( $arg =~ m{ \s }xms ) {
+        $command .= '"' . $arg . '"';
+    }
+    else {
+        $command .= "$arg ";
+    }
 }
 
 #print "COMMAND: $command\n";
-
 exec $command;
 
 exit;
@@ -137,7 +153,7 @@ This module requires these other modules and libraries:
 =head2 LICENCE
 
 rgit is free software. It comes without any warranty, to the extent permitted
-by applicable law. 
+by applicable law.
 
 rgit is released under the I<WTFPL Version 2.0> licence - L<http://sam.zoy.org/wtfpl/COPYING>
 
