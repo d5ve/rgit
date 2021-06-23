@@ -18,7 +18,11 @@ I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.
 
 =head2 VERSION
 
-Current version 0.04 - 2011-03-02
+Current version 0.05 - 2021-06-23
+
+    Now works for bare repositories.
+
+0.04 - 2011-03-02
 
     Now filters out obvious flags and comments from directory tests.
     Now works when passed a commit message on the commandline.

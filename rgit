@@ -20,7 +20,11 @@ I<GIT_WORK_TREE> and I<GIT_DIR> environmental variables from any file paths.
 
 =head2 VERSION
 
-Current version 0.04 - 2011-03-02
+Current version 0.05 - 2021-06-23
+
+    Now works for bare repositories.
+
+Version 0.04 - 2011-03-02
 
     Now filters out obvious flags and comments from directory tests.
     Now works when passed a commit message on the commandline.
@@ -34,7 +38,7 @@ Version 0.02 - 2010-09-02
 use strict;
 use warnings;
 
-our $VERSION = "0.004";
+our $VERSION = "0.005";
 $VERSION = eval $VERSION;
 
 use File::Spec;
@@ -42,12 +46,12 @@ use File::Basename;
 
 chomp( my $git_cmd = `which git` );
 my $git_work_tree;    # Directory holding the repo
-my $git_dir;          # Directory holding the .git directory
+my $git_dir;          # Directory holding the .git directory, or the work tree again for bare repos.
 
-# (1) Loop through args in reverse order, testing if any resemble a file path
-# with a .git dir in it somewhere. Use this information to replace any relative
+# Loop through args in reverse order, testing if any resemble a file path with
+# a .git dir in it somewhere. Use this information to replace any relative
 # paths with absolute ones, as well as record the GIT_WORK_TREE and GIT_DIR ENV
-# variables.  as the GIT_WORK_TREE and GIT_DIR ENV variables.
+# variables.
 foreach my $arg ( reverse @ARGV ) {
 
     # Skip if this arg looks like a git flag (-m etc.)
@@ -66,7 +70,28 @@ foreach my $arg ( reverse @ARGV ) {
         $arg = File::Spec->rel2abs($arg);
     }
 }
-$git_dir = File::Spec->catdir( $git_work_tree, '.git' ) if $git_work_tree;
+
+if ( $git_work_tree ) {
+    $git_dir = File::Spec->catdir( $git_work_tree, '.git' );
+}
+else {
+    # No smoking gun .git/ dir found in the args. Test the args again to see if one
+    # of them is a path to a bare git repository.
+    # NOTE: It should be possible to do this work as part of the first pass
+    # through the args...
+    foreach my $arg ( reverse @ARGV ) {
+        # Skip if this arg looks like a git flag (-m etc.)
+        next if $arg =~ m{\A - }xms;
+
+        # Skip if this arg contains many spaces - it's probably a commit
+        # message.
+        next if $arg =~ m{ (\s.*?){4,} }xms;
+
+        $git_work_tree = get_bare_repo($arg);
+        last if $git_work_tree;
+    }
+    $git_dir = $git_work_tree;
+}
 
 my $command;
 if ( !$git_work_tree || $git_work_tree eq '.' ) {
@@ -89,7 +114,7 @@ foreach my $arg (@ARGV) {
     }
 }
 
-#print "COMMAND: $command\n";
+# print "COMMAND: $command\n";
 exec $command;
 
 exit;
@@ -105,6 +130,19 @@ sub get_git_work_tree {
         $last = $path;
         $path = dirname($path);
     }
+    return;
+}
+
+# Similar checks to the git command itself. Just more crufty.
+# https://github.com/git/git/blob/211eca0895794362184da2be2a2d812d070719d3/setup.c#L328
+sub get_bare_repo {
+    my $path = shift;
+
+    return $path if -f "$path/HEAD";
+    return $path if -d "$path/objects";
+    return $path if -d "$path/refs";
+
+    return;
 }
 
 __END__
